@@ -9,9 +9,11 @@ class OracleOfBacon
   class InvalidError < RuntimeError ; end
   class NetworkError < RuntimeError ; end
   class InvalidKeyError < RuntimeError ; end
+  extend ActiveModel::Naming
 
   attr_accessor :from, :to
   attr_reader :api_key, :response, :uri
+  attr_reader   :errors
   
   include ActiveModel::Validations
   validates_presence_of :from
@@ -20,14 +22,17 @@ class OracleOfBacon
   validate :from_does_not_equal_to
 
   def from_does_not_equal_to
-    # if @from == @to
-      # raise error
+    # validates_each :from, :to do |record, attr, value|
+      # record.errors.add attr, "From cannot be the same as To" if @from == @to
+    # end  
+    errors.add(:from, "From cannot be the same as To") if @from == @to
   end
 
   def initialize(api_key='38b99ce9ec87', from="Kevin Bacon", to="Kevin Bacon")
     @from = from
     @to = to
-    @api = api_key
+    @api_key = api_key
+    @errors = ActiveModel::Errors.new(self)
   end
 
   def find_connections
